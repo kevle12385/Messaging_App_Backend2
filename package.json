@@ -5,7 +5,9 @@
   "main": "index.js",
   "author": "alphasec",
   "license": "MIT",
-   "dependencies": {
+  "dependencies": {
+    "mongodb": "^6.4.0",
+    "mongoose": "^8.2.0"
   },
   "scripts": {
     "start": "node index.js"

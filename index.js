@@ -1,12 +1,26 @@
-const http = require('http');
-const PORT = 3000;
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World!');
+app.get('/', (req, res) => {
+  res.send('Hello World!');
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+
+const dbURI = "mongodb+srv://kevle12385:3916Cats@cluster0.ri2fueh.mongodb.net/"
+
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected…'))
+  .catch(err => console.error(err));
+
+
+
+
+
+
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
