@@ -4,7 +4,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
-const { createAccount } = require('./functions');
+const createAccount = require('./functions');
 const cors = require('cors');
 
 const uri = process.env.MONGODB_URI;
