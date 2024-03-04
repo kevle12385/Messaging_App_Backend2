@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
 const createAccount = require('./functions');
 const cors = require('cors');
+const bodyParser = require('body-parser'); // Needed for Express versions < 4.16.0
+app.use(express.json());
 
 const uri = process.env.MONGODB_URI;
 app.use(cors({
