@@ -1,18 +1,22 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
+const { createAccount } = require('./functions');
+
+const uri = process.env.MONGODB_URI;
+
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-const uri ="mongodb+srv://kevle12385:3916Cats@cluster0.ri2fueh.mongodb.net/";
 
 const client = new MongoClient(uri);
 async function main(){
 
-  const uri = "mongodb+srv://kevle12385:3916Cats@cluster0.ri2fueh.mongodb.net/";
 
 
   const client = new MongoClient(uri);
@@ -20,10 +24,8 @@ async function main(){
   try {
       // Connect to the MongoDB cluster
       await client.connect();
-
-      // Make the appropriate DB calls
       await  listDatabases(client);
-
+     
   } catch (e) {
       console.error(e);
   } finally {
@@ -41,6 +43,16 @@ async function listDatabases(client){
 };
 
 
+
+app.post('/api/create-account', async (req, res) => {
+  const newUser = req.body;
+  try {
+    await createAccount(client, newUser); // Assuming `client` is your MongoDB client instance
+    res.status(201).send({ message: 'Account created successfully' });
+  } catch (error) {
+    res.status(500).send({ message: `An error occurred: ${error.message}` });
+  }
+});
 
 
 app.listen(PORT, () => {
