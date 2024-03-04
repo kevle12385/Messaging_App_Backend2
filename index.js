@@ -5,8 +5,12 @@ const PORT = process.env.PORT || 3000;
 const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
 const { createAccount } = require('./functions');
+const cors = require('cors');
 
 const uri = process.env.MONGODB_URI;
+app.use(cors({
+  origin: 'http://localhost:5173' // Only allow requests from this origin
+}));
 
 
 app.get('/', (req, res) => {
