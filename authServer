@@ -84,21 +84,34 @@ function generateAccessToken(user) {
 
 app.post('/api/token', async (req, res) => {
     const refreshToken = req.body.token;
-    if (refreshToken == null) return res.sendStatus(401);
+    if (!refreshToken) return res.status(401).send("Refresh token is required");
 
-    // Assuming the user collection name is "users"
-    const user = await client.db("User").collection("User_information").findOne({ refreshToken: refreshToken });
+    try {
+        const payload = await validateRefreshToken(refreshToken);
+        if (!payload) return res.status(403).send("Invalid refresh token");
 
-    if (!user) return res.sendStatus(403); // No user found with this refresh token, or the token is invalid
+        // Generate new tokens
+        const accessToken = generateAccessToken({ name: payload.name });
+        // Optionally generate a new refresh token here if you're rotating them
 
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err) => {
-        if (err) return res.sendStatus(403);
-
-        const accessToken = generateAccessToken({ name: user.name });
-        res.json({ accessToken });
-    });
+        res.json({ accessToken }); // , refreshToken: newRefreshToken if you're rotating
+    } catch (error) {
+        console.error("Error refreshing token", error);
+        return res.status(500).send("Internal server error");
+    }
 });
 
+
+async function validateRefreshToken(token) {
+    try {
+        const payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+        // Look up the token in the database to ensure it's still valid
+        const user = await findUserByRefreshToken(token); // Implement this function based on your DB
+        return user ? payload : null;
+    } catch (error) {
+        return null; // Token validation failed
+    }
+}
 
 
 app.listen(PORT, () => console.log(`Auth Server running on http://localhost:${PORT}`));
