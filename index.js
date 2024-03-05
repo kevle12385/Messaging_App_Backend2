@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3000;
 const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
 const createAccount = require('./functions');
+const loginFunction = require('./functions');
 const cors = require('cors');
 const bodyParser = require('body-parser'); // Needed for Express versions < 4.16.0
 app.use(express.json());
@@ -21,6 +22,8 @@ app.get('/', (req, res) => {
 
 
 const client = new MongoClient(uri);
+
+
 async function main(){
 
 
@@ -31,7 +34,7 @@ async function main(){
       // Connect to the MongoDB cluster
       await client.connect();
       await  listDatabases(client);
-     
+      
   } catch (e) {
       console.error(e);
   } finally {
@@ -59,6 +62,21 @@ app.post('/api/create-account', async (req, res) => {
     res.status(500).send({ message: `An error occurred: ${error.message}` });
   }
 });
+
+app.post('/api/login', async (req, res) => {
+  const { Email, Password } = req.body;
+  if (!Email || !Password) {
+    return res.status(400).send("Email and password are required.");
+  }
+  try {
+    const result = await loginFunction(databaseClient, Email, Password);
+    res.json(result);
+  } catch (error) {
+    res.status(500).send("Error fetching account");
+  }
+});
+
+
 
 
 app.listen(PORT, () => {
