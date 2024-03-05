@@ -2,10 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const mongoose = require('mongoose');
 const { MongoClient } = require('mongodb');
-const createAccount = require('./functions');
-const loginFunction = require('./functions');
+const { createAccount, loginFunction } = require('./functions');
+
 const cors = require('cors');
 const bodyParser = require('body-parser'); // Needed for Express versions < 4.16.0
 app.use(express.json());
@@ -28,17 +27,16 @@ async function main(){
 
 
 
-  const client = new MongoClient(uri);
 
   try {
       // Connect to the MongoDB cluster
       await client.connect();
       await  listDatabases(client);
-      
+      // await loginFunction(client, "kevle12385@ymail.com", "555dog")
   } catch (e) {
       console.error(e);
   } finally {
-      await client.close();
+      
   }
 }
 
