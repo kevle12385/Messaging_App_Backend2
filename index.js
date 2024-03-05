@@ -61,19 +61,21 @@ app.post('/api/create-account', async (req, res) => {
   }
 });
 
+
 app.post('/api/login', async (req, res) => {
-  const { Email, Password } = req.body;
-  if (!Email || !Password) {
-    return res.status(400).send("Email and password are required.");
-  }
+  const { Email, Password } = req.body; // Extract email and password from the JSON body of the request
   try {
-    const result = await loginFunction(databaseClient, Email, Password);
-    res.json(result);
+    const result = await loginFunction(client, Email, Password);
+    if (result.length === 0) {
+      return res.status(401).send("Login Incorrect"); // No matching user found
+    }
+    // Proceed with login success response
+    res.json(result); // Send back the result, though you might want to filter what's returned
   } catch (error) {
-    res.status(500).send("Error fetching account");
+    console.error("Error fetching account", error);
+    res.status(500).send("Internal server error");
   }
 });
-
 
 
 
