@@ -1,0 +1,105 @@
+require('dotenv').config();
+const express = require('express');
+const PORT =  4000; // Make sure this line exists and sets PORT to 4000
+const { MongoClient } = require('mongodb');
+const { createAccount, loginFunction,  } = require('./functions');
+const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
+
+const app = express();
+const cors = require('cors');
+const bodyParser = require('body-parser'); // Needed for Express versions < 4.16.0
+app.use(express.json());
+
+const uri = process.env.MONGODB_URI;
+app.use(cors({
+  origin: 'http://localhost:5173' // Only allow requests from this origin
+}));
+
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+
+const client = new MongoClient(uri);
+
+
+async function main(){
+  try {
+      // Connect to the MongoDB cluster
+      await client.connect();
+      await  listDatabases(client);
+      // await loginFunction(client, "kevle12385@ymail.com", "555dog")
+  } catch (e) {
+      console.error(e);
+  } finally {
+      
+  }
+}
+
+main().catch(console.error);
+
+async function listDatabases(client){
+  databasesList = await client.db().admin().listDatabases();
+
+  console.log("Databases:");
+  databasesList.databases.forEach(db => console.log(` - ${db.name}`));
+};
+
+
+app.post('/api/login', async (req, res) => {
+    const { Email, Password } = req.body; // Extract email and password from the JSON body of the request
+    
+    try {
+      const result = await loginFunction(client, Email, Password);
+      if (result.length == 0) {
+        return res.status(401).send("Login Incorrect"); 
+      }
+      
+      const user = result[0];
+      const payload = { userId: user._id.toString() };
+      const accessToken = generateAccessToken(user);
+      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
+      
+      await client.db("User").collection("User_information").updateOne(
+        { _id: user._id }, // Filter condition to match the user document
+        { $set: { refreshToken: refreshToken } } // Update operation
+      );
+
+
+      
+      res.json({ accessToken:accessToken, refreshToken:refreshToken });
+  
+  
+    } catch (error) {
+      console.error("Error fetching account", error);
+      res.status(500).send("Internal server error");
+    }
+    
+  });
+
+function generateAccessToken(user) {
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "15s"})
+}
+
+app.post('/api/token', async (req, res) => {
+    const refreshToken = req.body.token;
+    if (refreshToken == null) return res.sendStatus(401);
+
+    // Assuming the user collection name is "users"
+    const user = await client.db("User").collection("User_information").findOne({ refreshToken: refreshToken });
+
+    if (!user) return res.sendStatus(403); // No user found with this refresh token, or the token is invalid
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err) => {
+        if (err) return res.sendStatus(403);
+
+        const accessToken = generateAccessToken({ name: user.name });
+        res.json({ accessToken });
+    });
+});
+
+
+
+app.listen(PORT, () => console.log(`Auth Server running on http://localhost:${PORT}`));
+

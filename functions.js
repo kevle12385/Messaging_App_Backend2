@@ -23,5 +23,7 @@ async function createAccount(client, newUser) {
     }
   }
   
+
+
   // In your functions.js or equivalent file
-  module.exports = { createAccount, loginFunction };
+  module.exports = { createAccount, loginFunction,  };
