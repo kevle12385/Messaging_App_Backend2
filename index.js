@@ -7,10 +7,11 @@ const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
 const app = express();
 const cors = require('cors');
 app.use(express.json());
-const server = require("http").createServer
-const io = require('socket.io')(server, {
-  transports: ['websocket',  'polling']
-});
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app); // Create an http.Server instance from the Express app
+const io = new Server(server); // Pass the http.Server instance to Socket
 
 
 
@@ -21,8 +22,23 @@ const corsOptions = {
   optionsSuccessStatus: 200, // For legacy browser support
   credentials: true, // Allowing credentials is important for sessions/cookies
 };
-
 app.use(cors(corsOptions));
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+  
+  // Other socket event handlers
+});
+
+
+
+
+
+
 
 
 
