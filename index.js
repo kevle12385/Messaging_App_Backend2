@@ -97,9 +97,90 @@ function authenticateToken(req, res, next) {
   })
 }
 
-app.delete('/api/logout', (req, res) => {
-  //delete refresh token in data base
-})
+
+
+app.post('/api/token', async (req, res) => {
+    const refreshToken = req.body.token;
+    if (!refreshToken) return res.status(401).send("Refresh token is required");
+
+    try {
+        const payload = await validateRefreshToken(refreshToken);
+        if (!payload) return res.status(403).send("Invalid refresh token");
+
+        // Generate new tokens
+        const accessToken = generateAccessToken({ name: payload.name });
+        // Optionally generate a new refresh token here if you're rotating them
+
+        res.json({ accessToken }); // , refreshToken: newRefreshToken if you're rotating
+    } catch (error) {
+        console.error("Error refreshing token", error);
+        return res.status(500).send("Internal server error");
+    }
+});
+
+
+app.post('/api/login', async (req, res) => {
+  const { Email, Password } = req.body; // Extract email and password from the JSON body of the request
+  
+  try {
+    const result = await loginFunction(client, Email, Password);
+    if (result.length == 0) {
+      return res.status(401).send("Login Incorrect"); 
+    }
+    
+    const user = result[0];
+    const accessToken = generateAccessToken({ userId: user._id.toString() }); // Ensure minimal and necessary info in token
+    const refreshToken = jwt.sign({ userId: user._id.toString() }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+
+    // Store the refresh token in the database associated with the user
+    await client.db("User").collection("User_information").updateOne(
+      { _id: user._id },
+      { $set: { refreshToken: refreshToken } }
+    );
+
+    // Send the access token as an HTTP-only cookie
+    res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 15 * 60 * 1000 });
+
+    res.send('Login successful');
+  } catch (error) {
+    console.error("Error fetching account", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+
+async function findUserByRefreshToken(token) {
+  return await client.db("User").collection("User_information").findOne({ refreshToken: token });
+}
+
+
+async function validateRefreshToken(token) {
+  try {
+      const payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+      // Look up the token in the database to ensure it's still valid
+      const user = await findUserByRefreshToken(token); // Implement this function based on your DB
+      return user ? payload : null;
+  } catch (error) {
+      return null; // Token validation failed
+  }
+}
+
+
+function generateAccessToken(user) {
+  // Including only the user's ID in the JWT payload
+  const payload = { userId: user._id };
+  
+  // Signing the token with an expiration time of 15 minutes
+  try {
+      return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+  } catch (error) {
+      console.error("Error generating access token:", error);
+      throw new Error("Failed to generate access token.");
+  }
+}
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
