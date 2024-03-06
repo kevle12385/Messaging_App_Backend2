@@ -4,11 +4,16 @@ const PORT = process.env.PORT || 3000;
 const { MongoClient } = require('mongodb');
 const { createAccount, loginFunction,  } = require('./functions');
 const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
-
 const app = express();
 const cors = require('cors');
-const bodyParser = require('body-parser'); // Needed for Express versions < 4.16.0
 app.use(express.json());
+const server = require("http").createServer
+const io = require('socket.io')(server, {
+  transports: ['websocket',  'polling']
+});
+
+
+
 
 const uri = process.env.MONGODB_URI;
 app.use(cors({
@@ -97,6 +102,20 @@ function authenticateToken(req, res, next) {
   })
 }
 
+app.get('/api/verify', (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) {
+    return res.status(401).send('not logged in');
+  }
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).send('Invalid or expired token');
+    }
+    res.send('logged in')
+  });
+
+});
+
 
 
 app.post('/api/token', async (req, res) => {
@@ -179,6 +198,10 @@ function generateAccessToken(user) {
   }
 }
 
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('accessToken'); // Clears the HttpOnly cookie
+  res.status(200).send('Logged out successfully');
+});
 
 
 
