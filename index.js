@@ -16,9 +16,14 @@ const io = require('socket.io')(server, {
 
 
 const uri = process.env.MONGODB_URI;
-app.use(cors({
-  origin: 'http://localhost:5173' // Only allow requests from this origin
-}));
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow only your frontend origin, adjust as needed
+  optionsSuccessStatus: 200, // For legacy browser support
+  credentials: true, // Allowing credentials is important for sessions/cookies
+};
+
+app.use(cors(corsOptions));
+
 
 
 app.get('/', (req, res) => {
