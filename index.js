@@ -204,7 +204,7 @@ app.post('/api/login', async (req, res) => {
     );
 
     // Send the access token as an HTTP-only cookie
-    res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict', maxAge: 15 * 60 * 1000 });
+    res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 15 * 60 * 1000 });
     console.log("Environment:", process.env.NODE_ENV);
     console.log("Secure flag:", process.env.NODE_ENV === 'production');
     
