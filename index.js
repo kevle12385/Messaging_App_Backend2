@@ -17,11 +17,24 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 
 const uri = process.env.MONGODB_URI;
+const allowedOrigins = [
+  'https://messaging-app-project.vercel.app',
+  'http://localhost:5173', // Add your local development origin here
+];
+
 const corsOptions = {
-  origin: 'https://messaging-app-project.vercel.app',
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) { // Allow requests with no origin (like mobile apps or curl requests)
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // if your frontend needs to send cookies
 };
+
 app.use(cors(corsOptions));
+
 
 io.on('connection', (socket) => {
   console.log('a user connected');
