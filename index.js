@@ -216,8 +216,13 @@ app.post('/api/login', async (req, res) => {
     );
 
     // Send the access token as an HTTP-only cookie
-    res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 15 * 60 * 1000 });
-
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None', // Ensure 'None' is in quotes
+      maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
+    });
+    
     
     res.send('Login successful');
   } catch (error) {
