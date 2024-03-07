@@ -123,27 +123,7 @@ function authenticateToken(req, res, next) {
   })
 }
 
-app.get('/api/verify', (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) {
-    return res.status(401).send('not logged in');
-  }
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
-    if (err) {
-      return res.status(403).send('Invalid or expired token');
-    }
 
-    // Assuming you have a way to find a user by ID stored in the token's 'sub' claim
-    const user = await findUserById(decoded.sub);
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-
-    // Optionally, you could check for more conditions here, like if the user's account is active
-
-    res.send('logged in');
-  });
-});
 
 async function findUserById(userId) {
   // Assuming `client` is your MongoDB client instance that's already connected to the database
