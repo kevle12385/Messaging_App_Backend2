@@ -18,7 +18,7 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 const uri = process.env.MONGODB_URI;
 const allowedOrigins = [
-  'https://messaging-app-project.vercel.app',
+  'https://messaging-app-project.vercel.app/login',
   'http://localhost:5173', // Add your local development origin here
 ];
 
