@@ -18,7 +18,7 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 const uri = process.env.MONGODB_URI;
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow only your frontend origin, adjust as needed
+  origin: process.env.FRONTEND_URL, // Allow only your frontend origin, adjust as needed
   optionsSuccessStatus: 200, // For legacy browser support
   credentials: true, // Allowing credentials is important for sessions/cookies
 };
