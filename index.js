@@ -18,11 +18,14 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 const uri = process.env.MONGODB_URI;
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow only your frontend origin, adjust as needed
+  origin: ['http://localhost:5173', 'https://messaging-app-project.vercel.app'], // Allow only your frontend origin, adjust as needed
   optionsSuccessStatus: 200, // For legacy browser support
   credentials: true, // Allowing credentials is important for sessions/cookies
 };
+
 app.use(cors(corsOptions));
+
+
 
 io.on('connection', (socket) => {
   console.log('a user connected');
