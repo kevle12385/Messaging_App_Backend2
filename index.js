@@ -219,7 +219,7 @@ app.post('/api/login', async (req, res) => {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'None', // Ensure 'None' is in quotes
+      sameSite: 'strict', // Ensure 'None' is in quotes
       maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
     });
     
