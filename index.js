@@ -17,24 +17,12 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 
 const uri = process.env.MONGODB_URI;
-const allowedOrigins = [
-  'https://messaging-app-project.vercel.app/login',
-  'http://localhost:5173', // Add your local development origin here
-];
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.includes(origin) || !origin) { // Allow requests with no origin (like mobile apps or curl requests)
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true, // if your frontend needs to send cookies
+  origin: 'http://localhost:5173', // Allow only your frontend origin, adjust as needed
+  optionsSuccessStatus: 200, // For legacy browser support
+  credentials: true, // Allowing credentials is important for sessions/cookies
 };
-
 app.use(cors(corsOptions));
-
 
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -177,23 +165,31 @@ async function findUserById(userId) {
 
 
 app.post('/api/token', async (req, res) => {
-    const refreshToken = req.body.token;
-    if (!refreshToken) return res.status(401).send("Refresh token is required");
+  const refreshToken = req.body.token;
+  if (!refreshToken) return res.status(401).send("Refresh token is required");
 
-    try {
-        const payload = await validateRefreshToken(refreshToken);
-        if (!payload) return res.status(403).send("Invalid refresh token");
+  try {
+      // Validate the refresh token and extract payload
+      const payload = await validateRefreshToken(refreshToken);
+      if (!payload) return res.status(403).send("Invalid refresh token");
 
-        // Generate new tokens
-        const accessToken = generateAccessToken({ name: payload.name });
-        // Optionally generate a new refresh token here if you're rotating them
+      // Generate a new access token
+      const accessToken = generateAccessToken({ name: payload.name });
+      
+      // Optionally generate a new refresh token if you're rotating them
+      const newRefreshToken = generateRefreshToken({ name: payload.name });
 
-        res.json({ accessToken }); // , refreshToken: newRefreshToken if you're rotating
-    } catch (error) {
-        console.error("Error refreshing token", error);
-        return res.status(500).send("Internal server error");
-    }
+      // Send the new tokens in a JSON response
+      res.json({
+          accessToken: accessToken,
+         
+      });
+  } catch (error) {
+      console.error("Error refreshing token", error);
+      return res.status(500).send("Internal server error");
+  }
 });
+
 
 
 app.post('/api/login', async (req, res) => {
@@ -216,13 +212,11 @@ app.post('/api/login', async (req, res) => {
     );
 
     // Send the access token as an HTTP-only cookie
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict', // Ensure 'None' is in quotes
-      maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
+    res.json({
+      message: 'Login successful',
+      accessToken, // Note: This is being set in an HTTP-only cookie as well
     });
-    
+        
     
     res.send('Login successful');
   } catch (error) {
