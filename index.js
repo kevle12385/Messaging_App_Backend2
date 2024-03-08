@@ -9,6 +9,7 @@ const cors = require('cors');
 app.use(express.json());
 const http = require('http');
 const { Server } = require('socket.io');
+const { Console } = require('console');
 
 const server = http.createServer(app); // Create an http.Server instance from the Express app
 const io = new Server(server); // Pass the http.Server instance to Socket
@@ -22,17 +23,20 @@ const corsOptions = {
   optionsSuccessStatus: 200, // For legacy browser support
   credentials: true, // Allowing credentials is important for sessions/cookies
 };
-
 app.use(cors(corsOptions));
 
-
+server.listen(3001, () => {
+  console.log('Server is running')
+})
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
-  
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
+ 
+
+  socket.on('send_message', (data) => {
+    socket.broadcast.emit("recieve_message", data)
+  })
+
+
   
   // Other socket event handlers
 });
@@ -160,7 +164,7 @@ app.post('/api/token', async (req, res) => {
       const accessToken = generateAccessToken({ name: payload.name });
       
       // Optionally generate a new refresh token if you're rotating them
-      const newRefreshToken = generateRefreshToken({ name: payload.name });
+      // const newRefreshToken = generateRefreshToken({ name: payload.name });
 
       // Send the new tokens in a JSON response
       res.json({
@@ -188,11 +192,25 @@ app.post('/api/login', async (req, res) => {
     const accessToken = generateAccessToken({ userId: user._id.toString() }); // Ensure minimal and necessary info in token
     const refreshToken = jwt.sign({ userId: user._id.toString() }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 
+    const refreshTokenExpiry = new Date();
+    refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // Set the expiry date to 7 days from now
+    console.log({
+      userId: user._id,
+      refreshToken,
+      refreshTokenExpiry,
+    });
+    
     // Store the refresh token in the database associated with the user
     await client.db("User").collection("User_information").updateOne(
       { _id: user._id },
-      { $set: { refreshToken: refreshToken } }
+      { 
+        $set: {
+          refreshToken: refreshToken,
+          refreshTokenExpiry: refreshTokenExpiry // Storing the expiration date
+        } 
+      }
     );
+
 
     // Send the access token as an HTTP-only cookie
     res.json({
