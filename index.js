@@ -131,23 +131,22 @@ function authenticateToken(req, res, next) {
 }
 
 
-
-async function findUserById(userId) {
-  // Assuming `client` is your MongoDB client instance that's already connected to the database
+async function findUserByEmail(email) {
   try {
-    const db = client.db("User");
-    const collection = db.collection("User_information");
+    const db = client.db('User');
+    const collection = db.collection('User_information');
+
+    const user = await collection.findOne({Email:email});
+
+    return user;
     
-    // Assuming the `userId` is stored in the `_id` field and is of type ObjectId
-    const ObjectId = require('mongodb').ObjectId; 
-    const user = await collection.findOne({ _id: new ObjectId(userId) });
-    
-    return user; // This will be `null` if no user is found
   } catch (error) {
-    console.error("Failed to find user by ID:", error);
-    throw error; // Rethrow or handle the error as appropriate for your application
+    console.log("Failed to find user by email:", error);
+    throw error;
   }
+  
 }
+
 
 
 
@@ -215,7 +214,8 @@ app.post('/api/login', async (req, res) => {
     // Send the access token as an HTTP-only cookie
     res.json({
       message: 'Login successful',
-      accessToken, // Note: This is being set in an HTTP-only cookie as well
+      accessToken,// Note: This is being set in an HTTP-only cookie as well
+      Email: user.email 
     });
         
     
