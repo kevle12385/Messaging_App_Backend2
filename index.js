@@ -215,7 +215,7 @@ app.post('/api/login', async (req, res) => {
     res.json({
       message: 'Login successful',
       accessToken,// Note: This is being set in an HTTP-only cookie as well
-      Email: user.email 
+      Email: Email 
     });
         
     
