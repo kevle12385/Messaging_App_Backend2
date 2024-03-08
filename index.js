@@ -148,31 +148,28 @@ async function findUserByEmail(email) {
 }
 
 
-
-
 app.post('/api/token', async (req, res) => {
-  const refreshToken = req.body.token;
-  if (!refreshToken) return res.status(401).send("Refresh token is required");
+  const { Email } = req.body;
 
   try {
-      // Validate the refresh token and extract payload
-      const payload = await validateRefreshToken(refreshToken);
-      if (!payload) return res.status(403).send("Invalid refresh token");
+    const user = await findUserByEmail(Email); // Ensure this is awaited
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
 
-      // Generate a new access token
-      const accessToken = generateAccessToken({ name: payload.name });
-      
-      // Optionally generate a new refresh token if you're rotating them
-      // const newRefreshToken = generateRefreshToken({ name: payload.name });
+    const now = new Date();
+    // Check if the stored refresh token is expired
+    if (user.refreshTokenExpiry && now > user.refreshTokenExpiry) {
+      return res.status(403).send("Refresh token expired");
+    }
 
-      // Send the new tokens in a JSON response
-      res.json({
-          accessToken: accessToken,
-         
-      });
+    // Generate a new access token if the refresh token hasn't expired
+    const accessToken = generateAccessToken({ userId: user._id.toString() });
+    res.json({ accessToken });
+    
   } catch (error) {
-      console.error("Error refreshing token", error);
-      return res.status(500).send("Internal server error");
+    console.error("Error processing token request", error);
+    res.status(500).send("Internal server error");
   }
 });
 
