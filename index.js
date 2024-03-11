@@ -270,6 +270,23 @@ app.get('/api/verify', (req, res) => {
   }
 });
 
+app.get('/api/people', async (req, res) => {
+  try {
+    const names = await client.db("User").collection("User_information")
+                          .aggregate([
+                            { $project: { _id: 0, name: 1 } }
+                          ]).toArray();
+    res.json(names);
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+
+
+
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
