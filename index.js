@@ -259,7 +259,16 @@ app.post('/api/logout', (req, res) => {
   res.status(200).send('Logged out successfully');
 });
 
+app.get('/api/verify', (req, res) => {
+  // Access the cookies from the request
+  const accessToken = req.cookies['accessToken'];
 
+  // Check if the accessToken exists
+  if (!accessToken) {
+    // If the accessToken cookie does not exist, return a 401 Unauthorized response
+    return res.status(401).json({ error: 'Access Denied: No token provided.' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
