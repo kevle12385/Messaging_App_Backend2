@@ -272,16 +272,27 @@ app.get('/api/verify', (req, res) => {
 
 app.get('/api/people', async (req, res) => {
   try {
+    // Dynamically get the excluded email from query params
+    const excludedEmail = req.query.excludeEmail; // Accessing the excludeEmail parameter from the request query string
+
+    // Create a query object that excludes the specified email, if any
+    let query = {};
+    if (excludedEmail) {
+  query.Email = { $ne: excludedEmail.trim() }; // Note the capital 'E' in 'Email'
+}
+
+
     const names = await client.db("User").collection("User_information")
-                          .aggregate([
-                            { $project: { _id: 0, name: 1 } }
-                          ]).toArray();
+                          .find(query, { projection: { _id: 0, name: 1 } }) // Use projection to include only the name field
+                          .toArray();
+
     res.json(names);
   } catch (error) {
     console.error("Error processing request:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 
