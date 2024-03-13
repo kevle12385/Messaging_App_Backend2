@@ -293,6 +293,34 @@ app.get('/api/people', async (req, res) => {
   }
 });
 
+app.post('api/friends/sendRequest', async (req, res) => {
+  try {
+    const { FriendID, AdderID } = req.body;
+
+    const updateResult =  await client.db("User").collection("Friend_Requests")
+    .insertOne({UserId: FriendID, 
+                RequestFrom: AdderID,
+                createdAt: new Date()})
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status
+  }
+})
+
+app.post('/api/UserID/get', async (req, res) => {
+  const { Email } = req.body;
+  try {
+    const user = await findUserByEmail(Email); // Ensure this function is implemented to find the user
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    // Assuming the user object contains the information you want to return
+    res.status(200).json(user._id); // Or res.status(200).send({ userID: user.id }) if you're only sending the ID
+  } catch (error) {
+    console.error("Error processing User Info request", error);
+    res.status(500).send("Internal server error");
+  }
+});
 
 
 
