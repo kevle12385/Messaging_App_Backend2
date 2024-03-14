@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const PORT = process.env.PORT || 3000;
 const { MongoClient } = require('mongodb');
+const { ObjectId } = require('mongodb');
+
 const { createAccount, loginFunction,  } = require('./functions');
 const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
 const app = express();
@@ -146,6 +148,8 @@ async function findUserByEmail(email) {
   }
   
 }
+
+
 
 
 app.post('/api/token', async (req, res) => {
@@ -358,6 +362,40 @@ app.post('/api/findFriendRequests', async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
+
+app.post('/api/findPersonByID', async (req, res) => {
+  const { userID } = req.body;
+  try {
+    // Make sure to pass `userID` to the function
+    const person = await findUserByID(userID);
+    if (person) {
+      res.status(200).json(person);
+    } else {
+      // If no person found, return a 404 not found status
+      res.status(404).send("Person not found");
+    }
+  } catch (error) {
+    console.error('Error while finding person:', error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+async function findUserByID(userID) {
+  try {
+    const db = client.db('User');
+    const collection = db.collection('User_information');
+
+    // Convert `userID` string to an ObjectId
+    const user = await collection.findOne({_id: new ObjectId(userID)});
+    console.log(user);
+
+    return user;
+    
+  } catch (error) {
+    console.log("Failed to find user by ID:", error);
+    throw error;
+  }
+}
 
 
 
