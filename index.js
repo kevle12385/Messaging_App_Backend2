@@ -293,19 +293,28 @@ app.get('/api/people', async (req, res) => {
   }
 });
 
-app.post('api/friends/sendRequest', async (req, res) => {
+app.post('/api/friends/sendRequest', async (req, res) => {
   try {
     const { FriendID, AdderID } = req.body;
 
-    const updateResult =  await client.db("User").collection("Friend_Requests")
-    .insertOne({UserId: FriendID, 
-                RequestFrom: AdderID,
-                createdAt: new Date()})
+    const updateResult = await client.db("User").collection("Friend_Requests")
+      .insertOne({
+        UserId: FriendID,
+        RequestFrom: AdderID,
+        createdAt: new Date()
+      });
+
+    if (updateResult.insertedCount === 1) {
+      res.status(200).send("Friend request sent successfully");
+    } else {
+      res.status(500).send("Failed to send friend request");
+    }
   } catch (error) {
     console.error("Error processing request:", error);
-    res.status
+    res.status(500).send("Error processing request");
   }
-})
+});
+
 
 app.post('/api/UserID/get', async (req, res) => {
   const { Email } = req.body;
