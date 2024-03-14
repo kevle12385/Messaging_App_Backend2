@@ -397,6 +397,67 @@ async function findUserByID(userID) {
   }
 }
 
+app.post('/api/enrichedFriendRequests', async (req, res) => {
+  const { userID } = req.body;
+  if (!userID) {
+    return res.status(400).send("User ID is required.");
+}    try {
+  const enrichedFriendRequests = await findAndEnrichFriendRequests(userID);
+
+  const enrichedData = enrichedFriendRequests.map(request => ({
+    createdAt: request.createdAt,
+    requesterDetails: request.requesterDetails
+  }));
+  
+
+  // Send the enriched friend requests back to the client
+  res.status(200).json(enrichedData);
+} catch (error) {
+  console.error('Error processing request:', error);
+  res.status(500).send("Internal server error");
+}
+});
+
+
+
+
+
+
+async function findAndEnrichFriendRequests(userID) {
+  try {
+      const db = client.db("User");
+      const friendRequests = await db.collection("Friend_Requests")
+          .find({ UserId: userID })
+          .toArray();
+
+      // Collect unique RequestFrom IDs
+      const requestFromIds = [...new Set(friendRequests.map(req => req.RequestFrom))].map(id => new ObjectId(id));
+
+      // Fetch user information in a single query
+      const users = await db.collection("User_information")
+          .find({ _id: { $in: requestFromIds } })
+          .toArray();
+
+      // Create a map for quicker user info lookup
+      const userMap = users.reduce((acc, user) => {
+          acc[user._id.toString()] = user;
+          return acc;
+      }, {});
+
+      // Enrich friend requests with user info
+      const enrichedFriendRequests = friendRequests.map(req => {
+          return {
+              ...req,
+              requesterDetails: userMap[req.RequestFrom]
+          };
+      });
+
+      return enrichedFriendRequests;
+  } catch (error) {
+      console.error("Error finding and enriching friend requests:", error);
+      throw error;
+  }
+}
 
 
 app.listen(PORT, () => {
