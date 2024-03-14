@@ -282,11 +282,11 @@ app.get('/api/people', async (req, res) => {
 }
 
 
-    const names = await client.db("User").collection("User_information")
-                          .find(query, { projection: { _id: 0, name: 1 } }) // Use projection to include only the name field
+    const UserInfo = await client.db("User").collection("User_information")
+                          .find(query, { projection: { _id: 1, name: 1 } }) // Use projection to include only the name field
                           .toArray();
 
-    res.json(names);
+    res.json(UserInfo);
   } catch (error) {
     console.error("Error processing request:", error);
     res.status(500).send("Internal Server Error");
