@@ -297,6 +297,15 @@ app.post('/api/friends/sendRequest', async (req, res) => {
   try {
     const { FriendID, AdderID } = req.body;
 
+    const existingRequest = await client.db("User").collection("Friend_Requests")
+    .findOne({
+      UserId: FriendID,
+      RequestFrom: AdderID
+    });
+  if (existingRequest) {
+        return res.status(400).send("Friend request already exists.");
+      }
+
     const updateResult = await client.db("User").collection("Friend_Requests")
       .insertOne({
         UserId: FriendID,
