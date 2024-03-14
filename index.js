@@ -337,6 +337,27 @@ app.post('/api/UserID/get', async (req, res) => {
 });
 
 
+app.post('/api/findFriendRequests', async (req, res) => {
+  const { userID } = req.body;
+  try {
+    // Using find().toArray() to get the documents matching the UserID
+    const friendRequests = await client.db("User").collection("Friend_Requests")
+                              .find({ UserId: userID })
+                              .toArray();
+
+    if (!friendRequests.length) {
+      // If no friend requests are found, you might want to send a different response
+      return res.status(404).send("No friend requests found.");
+    }
+
+    // Sending the found friend requests back in the response
+    res.status(200).json(friendRequests);
+
+  } catch (error) {
+    console.error('Error while finding friend requests:', error);
+    res.status(500).send("Internal server error");
+  }
+});
 
 
 
