@@ -303,7 +303,7 @@ app.post('/api/friends/sendRequest', async (req, res) => {
         RequestFrom: AdderID,
         createdAt: new Date()
       });
-      res.status(500).send("Sent Sucessfully");
+      res.status(200).send("Sent Sucessfully");
    
   } catch (error) {
     console.error("Error processing request:", error);
