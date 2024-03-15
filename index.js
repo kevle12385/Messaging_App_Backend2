@@ -478,13 +478,13 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
     
     // Update the accepting user's document to add the friend's _id to their list
     const updateResult = await db.collection("User_information").updateOne(
-      { _id: new ObjectId(RequestFrom) },
+      { _id: new ObjectId(userID) },
       { $addToSet: { friends: RequestFrom } }
     );
 
     // Optionally, update the requester's document to reflect the friendship both ways
     const updateRequesterResult = await db.collection("User_information").updateOne(
-      { _id: new ObjectId(userID) },
+      { _id: new ObjectId(RequestFrom) },
       { $addToSet: { friends: userID } }
     );
 
