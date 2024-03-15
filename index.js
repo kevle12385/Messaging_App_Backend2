@@ -418,11 +418,6 @@ app.post('/api/enrichedFriendRequests', async (req, res) => {
 }
 });
 
-
-
-
-
-
 async function findAndEnrichFriendRequests(userID) {
   try {
       const db = client.db("User");
@@ -458,6 +453,36 @@ async function findAndEnrichFriendRequests(userID) {
       throw error;
   }
 }
+
+
+app.post('/api/deleteFriendRequestDoc', async (req, res) => {
+  try {
+    const { RequestFrom, userID } = req.body
+    const db = client.db("User");
+    const result = await db.collection("Friend_Requests").deleteOne({
+      RequestFrom: RequestFrom,
+      UserId: userID, // Make sure this matches the field name in your collection
+    }); 
+    res.status(200).json(result);
+  }catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).send("Error processing request");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 app.listen(PORT, () => {
