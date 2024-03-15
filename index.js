@@ -487,7 +487,9 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
       { _id: new ObjectId(RequestFrom) },
       { $addToSet: { friends: userID } }
     );
-
+    console.log("RequestFrom ID:", RequestFrom);
+    console.log("UserID (acceptor) ID:", userID);
+    
     // If both updates are successful, proceed to delete the friend request document
     if (updateResult.modifiedCount > 0 && updateRequesterResult.modifiedCount > 0) {
       const deleteRequestResult = await db.collection("Friend_Requests").deleteOne({
