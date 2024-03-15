@@ -461,7 +461,7 @@ app.post('/api/deleteFriendRequestDoc', async (req, res) => {
     const db = client.db("User");
     const result = await db.collection("Friend_Requests").deleteOne({
       RequestFrom: RequestFrom,
-      UserId: userID, // Make sure this matches the field name in your collection
+      UserId: userID,
     }); 
     res.status(200).json(result);
   }catch (error) {
