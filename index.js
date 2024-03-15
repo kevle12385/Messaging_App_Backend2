@@ -511,6 +511,26 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
   }
 });
 
+app.post('/api/showFriendList', async (req, res) => {
+  const { userID } = req.body;
+  try {
+    const db = client.db("User");
+    // Assuming userID is stored as a string; convert to ObjectId if necessary
+    const userDocument = await db.collection("User_information").findOne({ _id: new ObjectId(userID) });
+
+    if (userDocument) {
+      // If the document is found, return the friends array
+      res.status(200).json({ friends: userDocument.friends });
+    } else {
+      // If no document is found for the provided userID
+      res.status(404).send("User not found");
+    }
+  } catch (error) {
+    console.error("Error fetching friend list:", error);
+    res.status(500).send("Error fetching friend list");
+  }
+});
+
 
 
 
