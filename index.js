@@ -536,7 +536,6 @@ app.post('/api/showFriendList', async (req, res) => {
 
 app.post('/api/friendsDetails', async (req, res) => {
   try {
-
     const db = client.db("User");
 
     // Extract the array of IDs from the request body and convert them to ObjectId
@@ -557,6 +556,29 @@ app.post('/api/friendsDetails', async (req, res) => {
 
 
 
+
+app.post('/api/friends/checkStatus', async (req, res) => {
+  try {
+    const { friendID, userID } = req.body;
+    const db = client.db("User");
+    // Since friendID is a string and matches the format in the database, no conversion is needed
+    const userDocument = await db.collection("User_information").findOne({
+      _id: new ObjectId(userID), // UserID is converted to ObjectId to match the _id field type
+      friends: { $in: [friendID] } // Directly use friendID as a string in the query
+    });
+
+    if (userDocument) {
+      // friendID found in the user's friends array
+      res.json({ areFriends: true, message: 'Users are already friends.' });
+    } else {
+      // friendID not found in the user's friends array
+      res.json({ areFriends: false, message: 'Users are not friends.' });
+    }
+  } catch (error) {
+    console.error('Error checking friend status:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 
 
