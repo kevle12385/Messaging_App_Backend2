@@ -532,7 +532,28 @@ app.post('/api/showFriendList', async (req, res) => {
 });
 
 
+app.post('/api/friendsDetails', async (req, res) => {
+  try {
 
+    const db = client.db("User");
+
+    // Extract the array of IDs from the request body and convert them to ObjectId
+    const friendIds = req.body.friends.map(id => new ObjectId(id));
+
+    // Query the database for documents with _id in the friendIds array
+    const friendsDetails = await db.collection("User_information")
+      .find({ _id: { $in: friendIds } })
+      .toArray();
+
+    // Send the query results back to the client
+    res.status(200).json(friendsDetails);
+  } catch (error) {
+    console.error("Error fetching friends' details:", error);
+    res.status(500).send("Internal server error");
+  } finally {
+    await client.close();
+  }
+});
 
 
 
