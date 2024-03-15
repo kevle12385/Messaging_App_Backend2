@@ -470,6 +470,46 @@ app.post('/api/deleteFriendRequestDoc', async (req, res) => {
   }
 });
 
+app.post('/api/acceptFriendRequestDoc', async (req, res) => {
+  try {
+    const { RequestFrom, userID } = req.body;
+
+    const db = client.db("User");
+    
+    // Update the accepting user's document to add the friend's _id to their list
+    const updateResult = await db.collection("User_information").updateOne(
+      { _id: new ObjectId(RequestFrom) },
+      { $addToSet: { friends: RequestFrom } }
+    );
+
+    // Optionally, update the requester's document to reflect the friendship both ways
+    const updateRequesterResult = await db.collection("User_information").updateOne(
+      { _id: new ObjectId(userID) },
+      { $addToSet: { friends: userID } }
+    );
+
+    // If both updates are successful, proceed to delete the friend request document
+    if (updateResult.modifiedCount > 0 && updateRequesterResult.modifiedCount > 0) {
+      const deleteRequestResult = await db.collection("Friend_Requests").deleteOne({
+        RequestFrom: RequestFrom,
+        UserId: userID,
+      });
+
+      if (deleteRequestResult.deletedCount > 0) {
+        res.status(200).json({ message: "Friend request accepted and friend request deleted." });
+      } else {
+        // The friend request document might have been missing or already deleted
+        res.status(404).json({ message: "Friend request not found or already deleted." });
+      }
+    } else {
+      // If the user documents were not updated, perhaps due to incorrect IDs
+      res.status(404).json({ message: "User documents not updated. Check the provided IDs." });
+    }
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).send("Error processing request");
+  }
+});
 
 
 
