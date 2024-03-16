@@ -471,6 +471,7 @@ app.post('/api/deleteFriendRequestDoc', async (req, res) => {
 });
 
 app.post('/api/acceptFriendRequestDoc', async (req, res) => {
+  console.log('Request body:', req.body);
   try {
     const { RequestFrom, userID } = req.body;
 
@@ -489,7 +490,8 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
     );
     console.log("RequestFrom ID:", RequestFrom);
     console.log("UserID (acceptor) ID:", userID);
-    
+    console.log('Request body:', req.body);
+
     // If both updates are successful, proceed to delete the friend request document
     if (updateResult.modifiedCount > 0 && updateRequesterResult.modifiedCount > 0) {
       const deleteRequestResult = await db.collection("Friend_Requests").deleteOne({
@@ -582,7 +584,40 @@ app.post('/api/friends/checkStatus', async (req, res) => {
 
 
 
+app.post('/api/friends/remove', async (req, res) => {
+  try {
+    const { friendID, userID } = req.body;
+    const db = client.db("User");
 
+    // Remove friendID from the userID's friends list
+    const response = await db.collection("User_information").updateOne(
+      { _id: new ObjectId(userID) },
+      { $pull: { friends: friendID } }
+    );
+
+    // Remove userID from the friendID's friends list
+    const response1 = await db.collection("User_information").updateOne(
+      { _id: new ObjectId(friendID) },
+      { $pull: { friends: userID } }
+    );
+
+    // Check if both modifications were successful
+    if (response.modifiedCount === 0 || response1.modifiedCount === 0) {
+      if (response.modifiedCount === 0 && response1.modifiedCount === 0) {
+        return res.status(404).send("Neither user found, or both users did not have each other in their friend list.");
+      } else if (response.modifiedCount === 0) {
+        return res.status(404).send("First user not found or did not have the second user in their friend list.");
+      } else {
+        return res.status(404).send("Second user not found or did not have the first user in their friend list.");
+      }
+    }
+
+    res.status(200).send("Friendship removed successfully from both sides.");
+  } catch (error) {
+    console.error('Error removing friend:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 
 
