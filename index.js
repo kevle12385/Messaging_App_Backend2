@@ -471,9 +471,12 @@ app.post('/api/deleteFriendRequestDoc', async (req, res) => {
 });
 
 app.post('/api/acceptFriendRequestDoc', async (req, res) => {
-  console.log('Request body:', req.body);
-  console.log('Request body:', req.body);
-
+  if (typeof userID !== 'string' || !userID.trim()) {
+    return res.status(400).send("userID must be a non-empty string.");
+  }
+  if (typeof RequestFrom !== 'string' || !RequestFrom.trim()) {
+    return res.status(400).send("RequestFrom must be a non-empty string.");
+  }
   try {
     const { RequestFrom, userID } = req.body;
 
@@ -500,12 +503,7 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
         UserId: userID,
       });
 
-      if (typeof userID !== 'string' || !userID.trim()) {
-        return res.status(400).send("userID must be a non-empty string.");
-      }
-      if (typeof RequestFrom !== 'string' || !RequestFrom.trim()) {
-        return res.status(400).send("RequestFrom must be a non-empty string.");
-      }
+
     
       if (deleteRequestResult.deletedCount > 0) {
         res.status(200).json({ message: "Friend request accepted and friend request deleted." });
