@@ -500,6 +500,9 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
         UserId: userID,
       });
 
+      if (!RequestFrom || !userID) {
+        return res.status(400).send("Missing required fields");
+      }
       if (deleteRequestResult.deletedCount > 0) {
         res.status(200).json({ message: "Friend request accepted and friend request deleted." });
       } else {
