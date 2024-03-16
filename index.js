@@ -472,6 +472,8 @@ app.post('/api/deleteFriendRequestDoc', async (req, res) => {
 
 app.post('/api/acceptFriendRequestDoc', async (req, res) => {
   console.log('Request body:', req.body);
+  console.log('Request body:', req.body);
+
   try {
     const { RequestFrom, userID } = req.body;
 
@@ -490,7 +492,6 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
     );
     console.log("RequestFrom ID:", RequestFrom);
     console.log("UserID (acceptor) ID:", userID);
-    console.log('Request body:', req.body);
 
     // If both updates are successful, proceed to delete the friend request document
     if (updateResult.modifiedCount > 0 && updateRequesterResult.modifiedCount > 0) {
