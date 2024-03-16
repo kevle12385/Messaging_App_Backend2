@@ -500,9 +500,13 @@ app.post('/api/acceptFriendRequestDoc', async (req, res) => {
         UserId: userID,
       });
 
-      if (!RequestFrom?.trim() || !userID?.trim()) {
-        return res.status(400).send("Missing or empty required fields");
+      if (typeof userID !== 'string' || !userID.trim()) {
+        return res.status(400).send("userID must be a non-empty string.");
       }
+      if (typeof RequestFrom !== 'string' || !RequestFrom.trim()) {
+        return res.status(400).send("RequestFrom must be a non-empty string.");
+      }
+    
       if (deleteRequestResult.deletedCount > 0) {
         res.status(200).json({ message: "Friend request accepted and friend request deleted." });
       } else {
