@@ -626,7 +626,7 @@ app.post('/api/friends/remove', async (req, res) => {
 });
 
 app.post('/api/createChatRoom', async (req, res) => {
-  const { user1, user2 } = req.body;
+  const { user1, user2, name1, name2 } = req.body;
 
   try {
     if (!user1 || typeof user1 !== 'string' || !user1.trim() || !user2 || typeof user2 !== 'string' || !user2.trim()) {
@@ -660,7 +660,50 @@ app.post('/api/createChatRoom', async (req, res) => {
   }
 });
 
+app.post('/api/showChatRooms', async (req, res) => {
+  const { userId } = req.body; // Assuming you're sending a single userId to find chat rooms for
 
+  if (!userId || typeof userId !== 'string' || !userId.trim()) {
+    return res.status(400).json({ message: "UserId must be a non-empty string." });
+  }
+
+  try {
+    const db = client.db("User");
+    const chatRooms = await db.collection("Chat_Rooms")
+                              .find({ users: userId })
+                              .toArray(); // Converts the cursor to an array
+
+    if (chatRooms.length > 0) {
+      res.status(200).json({ chatRooms });
+    } else {
+      res.status(404).json({ message: "No chat rooms found for the user" });
+    }
+  } catch (error) {
+    console.error('Error fetching chat rooms:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+app.post('/api/findUserByEmail', async (req, res) => {
+  const { Email } = req.body;
+  try {
+    const db = client.db("User");
+    const userDocument = await db.collection("User_information").findOne({ Email });
+
+    if (!userDocument) {
+      // If no document is found, send a 404 response
+      return res.status(404).json({ message: "No user found with that email." });
+    }
+
+    // Optionally, select which fields to send back to avoid sending sensitive information
+    const { _id, name, Email: userEmail } = userDocument; // Example fields
+    res.status(200).json({ _id, name, userEmail });
+  } catch (error) {
+    console.error('Error finding user information:', error);
+    // Send a 500 Internal Server Error response if an error occurs
+    res.status(500).json({ message: 'An error occurred while finding user information.' });
+  }
+});
 
 
 
