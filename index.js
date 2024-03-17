@@ -651,12 +651,10 @@ app.post('/api/createChatRoom', async (req, res) => {
       }
     );
 
-    // Check if the operation inserted a new document
-    if (response.lastErrorObject && response.lastErrorObject.upserted) {
+    
       res.status(201).json({ message: "Chat room created successfully", chatRoom: response.value });
-    } else {
       res.status(200).json({ message: "Chat room already exists or updated successfully", chatRoom: response.value });
-    }
+    
   } catch (error) {
     console.error('Failed to create or update chat room:', error);
     res.status(500).json({ message: 'Server error', error });
