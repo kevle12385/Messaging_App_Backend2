@@ -471,15 +471,15 @@ app.post('/api/deleteFriendRequestDoc', async (req, res) => {
 });
 
 app.post('/api/acceptFriendRequestDoc', async (req, res) => {
-  if (typeof userID !== 'string' || !userID.trim()) {
-    return res.status(400).send("userID must be a non-empty string.");
-  }
-  if (typeof RequestFrom !== 'string' || !RequestFrom.trim()) {
-    return res.status(400).send("RequestFrom must be a non-empty string.");
-  }
+  console.log(req.body)
   try {
     const { RequestFrom, userID } = req.body;
-
+    if (typeof userID !== 'string' || !userID.trim()) {
+      return res.status(400).send("userID must be a non-empty string.");
+    }
+    if (typeof RequestFrom !== 'string' || !RequestFrom.trim()) {
+      return res.status(400).send("RequestFrom must be a non-empty string.");
+    }
     const db = client.db("User");
     
     // Update the accepting user's document to add the friend's _id to their list
