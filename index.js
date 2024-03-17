@@ -638,8 +638,8 @@ app.post('/api/createChatRoom', async (req, res) => {
     const names = [name1, name2]
     const response = await db.collection("Chat_Rooms").findOneAndUpdate(
       { _id: chatRoomId },
-      {names: names},
-      { $setOnInsert: { users: [user1, user2], messages: [] } },
+      
+      { $setOnInsert: { users: [user1, user2],names: [name1, name2], messages: [] } },
       {
         upsert: true,
         returnOriginal: false
