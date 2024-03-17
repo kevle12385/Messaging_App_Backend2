@@ -629,37 +629,37 @@ app.post('/api/createChatRoom', async (req, res) => {
   const { user1, user2 } = req.body;
 
   try {
-    if (typeof user1 !== 'string' || !user1.trim()) {
-      return res.status(400).json({ message: "User1 ID must be a non-empty string." });
+    if (!user1 || typeof user1 !== 'string' || !user1.trim() || !user2 || typeof user2 !== 'string' || !user2.trim()) {
+      return res.status(400).json({ message: "User IDs must be non-empty strings." });
     }
-    if (typeof user2 !== 'string' || !user2.trim()) {
-      return res.status(400).json({ message: "User2 ID must be a non-empty string." });
-    }
-    const db = client.db("User");
 
-    // Assuming user1 and user2 are unique identifiers for the users
-    // Create a unique identifier for the chat room based on user1 and user2
+    const db = client.db("User");
     const chatRoomId = [user1, user2].sort().join('_');
 
-    // Try to find a chat room for these two users, or create one if it doesn't exist
     const response = await db.collection("Chat_Rooms").findOneAndUpdate(
-      { _id: chatRoomId }, // Use the chatRoomId as the document identifier
-      { $setOnInsert: { users: [user1, user2], messages: [] } }, // Initial fields if creating
+      { _id: chatRoomId },
+      { $setOnInsert: { users: [user1, user2], messages: [] } },
       {
-        upsert: true, // Create the document if it doesn't exist
-        returnOriginal: false // Ensures the modified document is returned
+        upsert: true,
+        returnOriginal: false
       }
     );
 
-    
-      res.status(201).json({ message: "Chat room created successfully", chatRoom: response.value });
-      res.status(200).json({ message: "Chat room already exists or updated successfully", chatRoom: response.value });
-    
+    // Since `findOneAndUpdate` with `upsert: true` will always return a document (either found or created),
+    // you should not end up with `response.value` being `null`.
+    // However, checking for the existence of `response.value` is still good practice.
+    if (response && response.value) {
+      res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
+    } else {
+      // This scenario should theoretically not happen due to the upsert, but it's handled just in case.
+      res.status(404).json({ message: "Chat room not found and could not be created" });
+    }
   } catch (error) {
     console.error('Failed to create or update chat room:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
 
 
 
