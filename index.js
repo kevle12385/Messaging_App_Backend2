@@ -625,6 +625,45 @@ app.post('/api/friends/remove', async (req, res) => {
   }
 });
 
+app.post('/api/createChatRoom', async (req, res) => {
+  const { user1, user2 } = req.body;
+
+  try {
+    if (typeof user1 !== 'string' || !user1.trim()) {
+      return res.status(400).send("userID must be a non-empty string.");
+    }
+    if (typeof user2 !== 'string' || !user2.trim()) {
+      return res.status(400).send("RequestFrom must be a non-empty string.");
+    }
+    const db = client.db("User");
+
+    // Assuming user1 and user2 are unique identifiers for the users
+    // Create a unique identifier for the chatroom based on user1 and user2
+    const chatRoomId = [user1, user2].sort().join('_');
+
+    // Try to find a chat room for these two users, or create one if it doesn't exist
+    const response = await db.collection("Chat_Rooms").findOneAndUpdate(
+      { _id: chatRoomId }, // Use the chatRoomId as the document identifier
+      {
+        $setOnInsert: { users: [user1, user2], messages: [] }, // Initial fields if creating
+      },
+      {
+        upsert: true, // Create the document if it doesn't exist
+        returnNewDocument: true // Return the new document if one is upserted
+      }
+    );
+
+    if (response.ok) {
+      res.status(200).json({ message: "Chat room created or updated successfully", chatRoom: response.value });
+    } else {
+      res.status(400).json({ message: "Failed to create or update chat room" });
+    }
+  } catch (error) {
+    console.error('Failed to create or update chat room:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
 
 
 
