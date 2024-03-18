@@ -706,24 +706,24 @@ app.post('/api/findUserByEmail', async (req, res) => {
   }
 });
 
-app.post('/api/findChatRoom', async (req, res) => {
-  const { userId, friendID } = req.body;
-  try {
-    const db = client.db("User");
-    const query = {
-      users: { $all: [userId, friendID] }
-    };
-  const chatRoom = await db.collection("Chat_Rooms").findOne(query);
-  if (chatRoom) {
-    res.status(200).send(chatRoom);
-  } else {
-    res.status(404).send({ message: "Chat room not found" });
-  }
-} catch (error) {
-  console.error('Error searching for chat room:', error);
-  res.status(500).send({ message: 'Internal server error' });
-}
-});
+// app.post('/api/findChatRoom', async (req, res) => {
+//   const { userId, friendID } = req.body;
+//   try {
+//     const db = client.db("User");
+//     const query = {
+//       users: { $all: [userId, friendID] }
+//     };
+//   const chatRoom = await db.collection("Chat_Rooms").findOne(query);
+//   if (chatRoom) {
+//     res.status(200).send(chatRoom);
+//   } else {
+//     res.status(404).send({ message: "Chat room not found" });
+//   }
+// } catch (error) {
+//   console.error('Error searching for chat room:', error);
+//   res.status(500).send({ message: 'Internal server error' });
+// }
+// });
 
 
 
