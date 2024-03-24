@@ -35,7 +35,7 @@ const userConnections = new Map();
 
 io.on('connection', (socket) => {
   const chatId = socket.handshake.query.chatId;
-
+  console.log(`Client connected`);
   if (chatId) {
       // Join the socket to a room named after the chatId
       socket.join(chatId);
@@ -59,6 +59,8 @@ io.on('connection', (socket) => {
       
 
       socket.on('disconnect', () => {
+        console.log(`Client disconnected`);
+
           // Socket.IO automatically handles leaving the room upon disconnection
           // Additional cleanup or notifications can be handled here
       });
