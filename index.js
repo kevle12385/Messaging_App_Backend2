@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 3000;
 const { MongoClient } = require('mongodb');
 const { ObjectId } = require('mongodb');
 
-const { createAccount, loginFunction, sendMessageToDb } = require('./functions');
+const { createAccount, loginFunction } = require('./functions');
 const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
 const app = express();
 const cors = require('cors');
@@ -747,7 +747,36 @@ app.post('/api/findUserByEmail', async (req, res) => {
 // }
 // });
 
+async function sendMessageToDb(messageData) {
+  try {
+    const db = client.db("User");
+    const chatRooms = db.collection("Chat_Rooms");
 
+    // Assuming messageData includes user1 and user2 identifiers
+    const user1 = messageData.user1;
+    const chatRoomId = messageData.chatRoomId;
+
+    const result = await chatRooms.updateOne(
+      { _id: chatRoomId },
+      { $push: { messages: messageData } } // Push the messageData to the messages array
+    );
+      console.log(messageData)
+    // Moved outside of updateOne method call
+    if (result.matchedCount === 1) {
+      console.log(`Successfully added the message to chat room ${chatRoomId}`);
+      // After successfully saving, broadcast the message to the room
+      // Consider emitting a success acknowledgment or event here
+    } else {
+      console.log(`Chat room ${chatRoomId} not found.`);
+      // Handle the case where the chat room doesn't exist
+      // Consider creating the chat room or handling the error differently
+    }
+  } catch (err) {
+    console.error('Failed to save message to database', err);
+    // Handle the error appropriately
+    // Consider emitting an error acknowledgment or event here
+  }
+}
 
 
 app.listen(PORT, () => {

@@ -30,14 +30,13 @@ async function createAccount(client, newUser) {
   
       // Assuming messageData includes user1 and user2 identifiers
       const user1 = messageData.user1;
-      const user2 = messageData.user2;
-      const chatRoomId = [user1, user2].sort().join('_');
+      const chatRoomId = messageData.chatRoomId;
   
       const result = await chatRooms.updateOne(
         { _id: chatRoomId },
         { $push: { messages: messageData } } // Push the messageData to the messages array
       );
-  
+        console.log(messageData)
       // Moved outside of updateOne method call
       if (result.matchedCount === 1) {
         console.log(`Successfully added the message to chat room ${chatRoomId}`);
@@ -57,4 +56,4 @@ async function createAccount(client, newUser) {
   
 
   // In your functions.js or equivalent file
-  module.exports = { createAccount, loginFunction, sendMessageToDb  };
+  module.exports = { createAccount, loginFunction  };
