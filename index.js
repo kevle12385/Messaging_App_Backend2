@@ -48,6 +48,8 @@ io.on('connection', (socket) => {
           
           // Message saved successfully, broadcast or acknowledge the message
           io.to(messageData.chatId).emit('receive_message', messageData);
+          console.log('New message received:', messageData);
+
         } catch (error) {
           console.error('Failed to save message:', error);
           // Optionally, inform the sender about the error
