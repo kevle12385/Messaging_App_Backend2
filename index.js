@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 3000;
 const { MongoClient } = require('mongodb');
 const { ObjectId } = require('mongodb');
 
-const { createAccount, loginFunction,  } = require('./functions');
+const { createAccount, loginFunction, sendMessageToDb } = require('./functions');
 const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
 const app = express();
 const cors = require('cors');
@@ -31,16 +31,36 @@ server.listen(3001, () => {
   console.log('Server is running')
 })
 
+const userConnections = new Map();
+
 io.on('connection', (socket) => {
- 
+  const chatId = socket.handshake.query.chatId;
 
-  socket.on('send_message', (data) => {
-    socket.broadcast.emit("recieve_message", data)
-  })
+  if (chatId) {
+      // Join the socket to a room named after the chatId
+      socket.join(chatId);
 
+      // Example: Listening for a 'send_message' event to broadcast to the room
+      socket.on('send_message', async (messageData) => {
+        try {
+          // Assuming sendMessageToDb is an async function that saves messageData to a database
+          await sendMessageToDb(messageData);
+          
+          // Message saved successfully, broadcast or acknowledge the message
+          io.to(messageData.chatId).emit('receive_message', messageData);
+        } catch (error) {
+          console.error('Failed to save message:', error);
+          // Optionally, inform the sender about the error
+          socket.emit('error', 'Message could not be saved');
+        }
+      });
+      
 
-  
-  // Other socket event handlers
+      socket.on('disconnect', () => {
+          // Socket.IO automatically handles leaving the room upon disconnection
+          // Additional cleanup or notifications can be handled here
+      });
+  }
 });
 
 

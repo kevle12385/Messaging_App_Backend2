@@ -18,5 +18,8 @@
   "scripts": {
     "devStart": "nodemon index.js",
     "devStartAuth": "nodemon authServer.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
