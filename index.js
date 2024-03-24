@@ -44,10 +44,11 @@ io.on('connection', (socket) => {
       socket.on('send_message', async (messageData) => {
         try {
           // Assuming sendMessageToDb is an async function that saves messageData to a database
-          await sendMessageToDb(messageData);
+          io.to(messageData.chatId).emit('receive_message', messageData);
+
+          // await sendMessageToDb(messageData);
           
           // Message saved successfully, broadcast or acknowledge the message
-          io.to(messageData.chatId).emit('receive_message', messageData);
           console.log('New message received:', messageData);
 
         } catch (error) {
