@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
       socket.on('send_message', async (messageData) => {
         try {
           // Assuming sendMessageToDb is an async function that saves messageData to a database
-          io.to(messageData.chatId).emit('receive_message', messageData);
+          io.to(chatId).emit('receive_message',messageData);
 
           // await sendMessageToDb(messageData);
           
