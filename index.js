@@ -768,9 +768,11 @@ app.post('/api/deleteChatroom', async (req, res) => {
       users: { $all: [user1, user2] }
     };
     const response = await chatRooms.findOneAndDelete(query);
+    if (response.value) {
 
       res.json({ message: "Chatroom deleted successfully", chatroom: response.value });
-  } catch (error) {
+    }
+    } catch (error) {
     console.error("Failed to delete chatroom:", error);
     res.status(500).json({ message: "Internal server error" });
   }
