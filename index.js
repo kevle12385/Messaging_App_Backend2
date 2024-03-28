@@ -725,25 +725,6 @@ app.post('/api/findUserByEmail', async (req, res) => {
   }
 });
 
-// app.post('/api/findChatRoom', async (req, res) => {
-//   const { userId, friendID } = req.body;
-//   try {
-//     const db = client.db("User");
-//     const query = {
-//       users: { $all: [userId, friendID] }
-//     };
-//   const chatRoom = await db.collection("Chat_Rooms").findOne(query);
-//   if (chatRoom) {
-//     res.status(200).send(chatRoom);
-//   } else {
-//     res.status(404).send({ message: "Chat room not found" });
-//   }
-// } catch (error) {
-//   console.error('Error searching for chat room:', error);
-//   res.status(500).send({ message: 'Internal server error' });
-// }
-// });
-
 async function sendMessageToDb(messageData) {
   try {
     const db = client.db("User");
@@ -776,6 +757,39 @@ async function sendMessageToDb(messageData) {
     // Consider emitting an error acknowledgment or event here
   }
 }
+
+
+app.post('/api/deleteChatroom', async (req, res) => {
+  const { user1, user2} = req.body;
+  try {
+    const db = client.db("User");
+    const chatRooms = db.collection("Chat_Rooms");
+    const query = {
+      users: { $all: [user1, user2] }
+    };
+    const response = await chatRooms.findOneAndDelete(query);
+    if (response.ok && response.value) {
+      res.json({ message: "Chatroom deleted successfully", chatroom: response.value });
+    } else {
+      res.status(404).json({ message: "Chatroom not found or could not be deleted" });
+    }
+  } catch (error) {
+    console.error("Failed to delete chatroom:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 app.listen(PORT, () => {
