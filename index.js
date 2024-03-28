@@ -760,12 +760,12 @@ async function sendMessageToDb(messageData) {
 
 
 app.post('/api/deleteChatroom', async (req, res) => {
-  const { user1, user2} = req.body;
+  const {user2} = req.body;
   try {
     const db = client.db("User");
     const chatRooms = db.collection("Chat_Rooms");
     const query = {
-      users: { $all: [user1, user2] }
+      _id: { $all:  user2 }
     };
     const response = await chatRooms.findOneAndDelete(query);
     if (response.value) {
