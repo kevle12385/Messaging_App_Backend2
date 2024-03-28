@@ -765,7 +765,7 @@ app.post('/api/deleteChatroom', async (req, res) => {
     const db = client.db("User");
     const chatRooms = db.collection("Chat_Rooms");
     const query = {
-      _id: { $all:  user2 }
+      _id: user2 
     };
     const response = await chatRooms.findOneAndDelete(query);
     if (response.value) {
