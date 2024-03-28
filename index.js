@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
           // Assuming sendMessageToDb is an async function that saves messageData to a database
           io.to(chatId).emit('receive_message',messageData);
 
-          // await sendMessageToDb(messageData);
+          await sendMessageToDb(messageData);
           
           // Message saved successfully, broadcast or acknowledge the message
           console.log('New message received:', messageData);
@@ -67,12 +67,6 @@ io.on('connection', (socket) => {
       });
   }
 });
-
-
-
-
-
-
 
 
 
@@ -770,6 +764,8 @@ async function sendMessageToDb(messageData) {
       // After successfully saving, broadcast the message to the room
       // Consider emitting a success acknowledgment or event here
     } else {
+      console.log("Sending message to DB with data:", messageData);
+
       console.log(`Chat room ${chatRoomId} not found.`);
       // Handle the case where the chat room doesn't exist
       // Consider creating the chat room or handling the error differently
