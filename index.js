@@ -770,8 +770,6 @@ app.post('/api/deleteChatroom', async (req, res) => {
     const response = await chatRooms.findOneAndDelete(query);
     if (response.ok && response.value) {
       res.json({ message: "Chatroom deleted successfully", chatroom: response.value });
-    } else {
-      res.status(404).json({ message: "Chatroom not found or could not be deleted" });
     }
   } catch (error) {
     console.error("Failed to delete chatroom:", error);
