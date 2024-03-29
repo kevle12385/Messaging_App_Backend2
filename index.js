@@ -644,34 +644,75 @@ app.post('/api/friends/remove', async (req, res) => {
   }
 });
 
+// app.post('/api/createChatRoom', async (req, res) => {
+//   const { user1, user2, name1, name2 } = req.body;
+
+//   try {
+//     if (!user1 || typeof user1 !== 'string' || !user1.trim() || !user2 || typeof user2 !== 'string' || !user2.trim()) {
+//       return res.status(400).json({ message: "User IDs must be non-empty strings." });
+//     }
+
+//     const db = client.db("User");
+//     const chatRoomId = [user1, user2].sort().join('_');
+//     const names = [name1, name2]
+//     const response = await db.collection("Chat_Rooms").findOneAndUpdate(
+//       { _id: chatRoomId },
+      
+//       { $setOnInsert: { users: [user1, user2], names: [name1, name2], messages: [] } },
+//       {
+//         upsert: true,
+//         returnOriginal: false
+//       }
+//     );
+
+//     // Since `findOneAndUpdate` with `upsert: true` will always return a document (either found or created),
+//     // you should not end up with `response.value` being `null`.
+//     // However, checking for the existence of `response.value` is still good practice.
+//     if (response && response.value) {
+//       res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
+//     } else {
+//       // This scenario should theoretically not happen due to the upsert, but it's handled just in case.
+//       res.status(200).json({ message: "Chat room not found and could not be created" });
+//     }
+//   } catch (error) {
+//     console.error('Failed to create or update chat room:', error);
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// });
+
+
 app.post('/api/createChatRoom', async (req, res) => {
   const { user1, user2, name1, name2 } = req.body;
 
   try {
-    if (!user1 || typeof user1 !== 'string' || !user1.trim() || !user2 || typeof user2 !== 'string' || !user2.trim()) {
+    if (!user1 || typeof user1 !== 'string' || !user1.trim() || 
+        !user2 || typeof user2 !== 'string' || !user2.trim()) {
       return res.status(400).json({ message: "User IDs must be non-empty strings." });
     }
 
     const db = client.db("User");
-    const chatRoomId = [user1, user2].sort().join('_');
-    const names = [name1, name2]
+    // Sort users by their ID to maintain consistency in chatRoomId creation
+    const sortedUsers = [user1, user2].sort();
+    const chatRoomId = sortedUsers.join('_');
+    // Create an array of user objects
+    const userObjects = [
+      { id: user1, name: name1 },
+      { id: user2, name: name2 }
+    ];
+    
     const response = await db.collection("Chat_Rooms").findOneAndUpdate(
       { _id: chatRoomId },
-      
-      { $setOnInsert: { users: [user1, user2], names: [name1, name2], messages: [] } },
+      { $setOnInsert: { users: userObjects, messages: [] } }, // Include the userObjects array
       {
         upsert: true,
         returnOriginal: false
       }
     );
 
-    // Since `findOneAndUpdate` with `upsert: true` will always return a document (either found or created),
-    // you should not end up with `response.value` being `null`.
-    // However, checking for the existence of `response.value` is still good practice.
     if (response && response.value) {
       res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
     } else {
-      // This scenario should theoretically not happen due to the upsert, but it's handled just in case.
+      // This scenario should not happen due to the upsert logic
       res.status(200).json({ message: "Chat room not found and could not be created" });
     }
   } catch (error) {
@@ -679,6 +720,8 @@ app.post('/api/createChatRoom', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
+
 
 app.post('/api/showChatRooms', async (req, res) => {
   const { userId } = req.body; // Assuming you're sending a single userId to find chat rooms for
@@ -777,6 +820,51 @@ app.post('/api/deleteChatroom', async (req, res) => {
   }
 });
 
+
+
+app.post('/api/changeName', async (req, res) => {
+  // Assuming the correct variable name is userId and newName for the new name
+  const { userId, newName } = req.body;
+  
+  try {
+    const db = client.db("User");
+    const info = db.collection("User_information");
+    const chatRooms = db.collection("Chat_Rooms");
+
+    const query = {
+       _id: new ObjectId(userId) // Use the correct variable obtained from req.body
+    };
+    
+    // The update operation, assuming you're updating a field named 'name'
+    const update = {
+      $set: { name: newName }
+    };
+
+    // Options to return the updated document
+    const options = { returnOriginal: false };
+    
+    const response = await info.findOneAndUpdate(query, update, options);
+  
+    const relatedUpdateQuery = { userIds: userId }; // Assuming the structure contains userIds array
+    const relatedUpdate = { $set: { "names.$[elem].name": newName } };
+    const relatedOptions = {
+      arrayFilters: [{ "elem.userId": userId }],
+      multi: true
+    };
+
+    // Update chat rooms
+    await chatRooms.updateMany(relatedUpdateQuery, relatedUpdate, relatedOptions);
+
+
+
+      res.json({ message: "Name updated successfully", user: response.value });
+ 
+    
+  } catch (error) {
+    console.error("Failed to update name:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 
 
