@@ -847,15 +847,17 @@ app.post('/api/changeName', async (req, res) => {
     
     const response = await info.findOneAndUpdate(query, update, options);
   
-    const relatedUpdateQuery = { userIds: userId }; // Assuming the structure contains userIds array
-    const relatedUpdate = { $set: { "names.$[elem].name": newName } };
-    const relatedOptions = {
-      arrayFilters: [{ "elem.userId": userId }],
-      multi: true
-    };
+    const relatedUpdateQuery = {}; // This would update all chat rooms
+  const relatedUpdate = {
+    $set: { "users.$[elem].name": newName }
+  };
+  const relatedOptions = {
+    arrayFilters: [{ "elem.id": userId }],
+    multi: true
+  };
 
-    // Update chat rooms
-    await chatRooms.updateMany(relatedUpdateQuery, relatedUpdate, relatedOptions);
+  // Update user's name in all chat rooms where they are a participant
+  await chatRooms.updateMany(relatedUpdateQuery, relatedUpdate, relatedOptions)
 
 
 
