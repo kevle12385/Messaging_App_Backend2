@@ -805,7 +805,7 @@ async function sendMessageToDb(messageData) {
 
 
 app.post('/api/deleteChatroom', async (req, res) => {
-  const {user2} = req.body;
+  const {user2} = req.body; 
   try {
     const db = client.db("User");
     const chatRooms = db.collection("Chat_Rooms");
@@ -871,13 +871,67 @@ app.post('/api/changeName', async (req, res) => {
 });
 
 
+app.post('/api/changeEmail', async (req, res) => {
+  const { userId, newEmail } = req.body;
+  
+  try {
+    const db = client.db("User");
+    const info = db.collection("User_information");
+    const { ObjectId } = require('mongodb');
+
+    // Check if the newEmail already exists in the database
+    const emailExists = await info.findOne({ Email: newEmail });
+
+    if (emailExists) {
+      return res.status(400).json({ message: 'This email is already in use.' });
+    }
+
+    const query = { _id: new ObjectId(userId) };
+    const update = { $set: { Email: newEmail } };
+    const options = { returnOriginal: false };
+    
+    const response = await info.findOneAndUpdate(query, update, options);
+    
+   
+      res.status(200).json({ message: 'Email updated successfully.' });
+  
+    
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred.', error: error.message });
+  }
+});
 
 
 
+app.post('/api/changePassword', async (req, res) => {
+  const { userId, newPassword } = req.body;
+  
+  try {
+    const db = client.db("User");
+    const info = db.collection("User_information");
+    const { ObjectId } = require('mongodb');
 
+    // Check if the newEmail already exists in the database
+    const passwordExists = await info.findOne({ Password: newPassword });
 
+    if (passwordExists) {
+      return res.status(400).json({ message: 'This Password is already in use.' });
+    }
 
-
+    const query = { _id: new ObjectId(userId) };
+    const update = { $set: { Password: newPassword } };
+    const options = { returnOriginal: false };
+    
+    const response = await info.findOneAndUpdate(query, update, options);
+    
+   
+      res.status(200).json({ message: 'Password updated successfully.' });
+  
+    
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred.', error: error.message });
+  }
+});
 
 
 
