@@ -724,28 +724,30 @@ app.post('/api/createChatRoom', async (req, res) => {
 
 
 app.post('/api/showChatRooms', async (req, res) => {
-  const { userId } = req.body; // Assuming you're sending a single userId to find chat rooms for
-
+  const {userId} = req.body;
+  
   if (!userId || typeof userId !== 'string' || !userId.trim()) {
     return res.status(400).json({ message: "UserId must be a non-empty string." });
   }
-
   try {
     const db = client.db("User");
-    const chatRooms = await db.collection("Chat_Rooms")
-                              .find({ users: userId })
-                              .toArray(); // Converts the cursor to an array
+    // Adjust the query to use $elemMatch to search within an array of objects
+    const chatRooms = await db.collection("Chat_Rooms").find({'users.id': userId}).toArray();
 
     if (chatRooms.length > 0) {
-      res.status(200).json({ chatRooms });
+      res.status(200).json({chatRooms});
     } else {
-      res.status(404).json({ message: "No chat rooms found for the user" });
+      res.status(404).json({chatRooms});
+    } 
+  }catch (error) {
+      console.error('Error fethcing chat rooms:', error)
+      res.status(500).json({ message: 'Server error', error });
+
     }
-  } catch (error) {
-    console.error('Error fetching chat rooms:', error);
-    res.status(500).json({ message: 'Server error', error });
-  }
-});
+
+})
+
+
 
 app.post('/api/findUserByEmail', async (req, res) => {
   const { Email } = req.body;
