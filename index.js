@@ -705,12 +705,12 @@ app.post('/api/createChatRoom', async (req, res) => {
       { $setOnInsert: { users: userObjects, messages: [] } }, // Include the userObjects array
       {
         upsert: true,
-        returnNewDocument: true
+    returnDocument: 'after'
       }
     );
 
 
-      res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
+    res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
     
   } catch (error) {
     console.error('Failed to create or update chat room:', error);
