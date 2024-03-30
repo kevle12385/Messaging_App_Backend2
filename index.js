@@ -705,7 +705,7 @@ app.post('/api/createChatRoom', async (req, res) => {
       { $setOnInsert: { users: userObjects, messages: [] } }, // Include the userObjects array
       {
         upsert: true,
-        returnOriginal: false
+        returnNewDocument: true
       }
     );
 
