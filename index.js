@@ -709,12 +709,9 @@ app.post('/api/createChatRoom', async (req, res) => {
       }
     );
 
-    if (response && response.value) {
+
       res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
-    } else {
-      // This scenario should not happen due to the upsert logic
-      res.status(200).json({ message: "Chat room not found and could not be created" });
-    }
+    
   } catch (error) {
     console.error('Failed to create or update chat room:', error);
     res.status(500).json({ message: 'Server error', error });
