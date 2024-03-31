@@ -582,8 +582,6 @@ app.post('/api/friendsDetails', async (req, res) => {
 });
 
 
-
-
 app.post('/api/friends/checkStatus', async (req, res) => {
   try {
     const { friendID, userID } = req.body;
@@ -643,43 +641,6 @@ app.post('/api/friends/remove', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
-// app.post('/api/createChatRoom', async (req, res) => {
-//   const { user1, user2, name1, name2 } = req.body;
-
-//   try {
-//     if (!user1 || typeof user1 !== 'string' || !user1.trim() || !user2 || typeof user2 !== 'string' || !user2.trim()) {
-//       return res.status(400).json({ message: "User IDs must be non-empty strings." });
-//     }
-
-//     const db = client.db("User");
-//     const chatRoomId = [user1, user2].sort().join('_');
-//     const names = [name1, name2]
-//     const response = await db.collection("Chat_Rooms").findOneAndUpdate(
-//       { _id: chatRoomId },
-      
-//       { $setOnInsert: { users: [user1, user2], names: [name1, name2], messages: [] } },
-//       {
-//         upsert: true,
-//         returnOriginal: false
-//       }
-//     );
-
-//     // Since `findOneAndUpdate` with `upsert: true` will always return a document (either found or created),
-//     // you should not end up with `response.value` being `null`.
-//     // However, checking for the existence of `response.value` is still good practice.
-//     if (response && response.value) {
-//       res.status(200).json({ message: "Chat room handled successfully", chatRoom: response.value });
-//     } else {
-//       // This scenario should theoretically not happen due to the upsert, but it's handled just in case.
-//       res.status(200).json({ message: "Chat room not found and could not be created" });
-//     }
-//   } catch (error) {
-//     console.error('Failed to create or update chat room:', error);
-//     res.status(500).json({ message: 'Server error', error });
-//   }
-// });
-
 
 app.post('/api/createChatRoom', async (req, res) => {
   const { user1, user2, name1, name2 } = req.body;
@@ -931,6 +892,47 @@ app.post('/api/changePassword', async (req, res) => {
 });
 
 
+app.post('/api/DeleteAccount', async (req, res) => {
+  const { userId } = req.body; // Expecting userId as a string
+  try {
+    const db = client.db("User");
+    const session = client.startSession();
+    await session.startTransaction();
+
+    const userObjectId = new ObjectId(userId);
+
+    // Delete user from User_information
+    const userInfoResponse = await db.collection("User_information").deleteOne({ _id: userObjectId }, { session });
+
+    // Delete related friend requests
+    const friendRequestsResponse = await db.collection("Friend_Requests").deleteMany({
+      $or: [
+        { UserId: userId },
+        { RequestFrom: userId }
+      ]
+    }, { session });
+
+    // Delete related chat rooms
+    const chatRoomsResponse = await db.collection("Chat_Rooms").deleteMany({
+      "users.id": userId
+    }, { session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json({
+      message: "Account and related data deleted successfully",
+      userInfoDeleted: userInfoResponse.deletedCount,
+      friendRequestsDeleted: friendRequestsResponse.deletedCount,
+      chatRoomsDeleted: chatRoomsResponse.deletedCount,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Failed to delete account:", error);
+    res.status(500).json({ message: 'An error occurred.', error: error.message });
+  }
+});
 
 
 app.listen(PORT, () => {
