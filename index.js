@@ -29,6 +29,8 @@ app.use(cors(corsOptions));
 
 server.listen(PORT, () => {
   console.log('Server is running')
+  console.log(`Server running on http://localhost:${PORT}`);
+
 })
 
 const userConnections = new Map();
