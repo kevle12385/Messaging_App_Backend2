@@ -29,9 +29,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-server.listen(PORT, () => {
+server.listen(3001, () => {
   console.log('Server is running')
 })
+
 
 const userConnections = new Map();
 
