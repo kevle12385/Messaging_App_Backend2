@@ -21,7 +21,7 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 const uri = process.env.MONGODB_URI;
 const corsOptions = {
-  origin: "https://messaging-app-project.vercel.app/",
+  origin: true, // Allow only your frontend origin, adjust as needed
   optionsSuccessStatus: 200, // For legacy browser support
   credentials: true, // Allowing credentials is important for sessions/cookies
 };
