@@ -27,7 +27,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-server.listen(443, () => {
+server.listen(PORT, () => {
   console.log('Server is running')
 })
 
@@ -935,6 +935,6 @@ app.post('/api/DeleteAccount', async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server running on http://localhost:${PORT}`);
+// });
