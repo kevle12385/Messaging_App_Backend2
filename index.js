@@ -28,7 +28,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-server.listen(3001, () => {
+server.listen(3000, () => {
   console.log('Server is running')
 })
 
