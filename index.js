@@ -1,9 +1,9 @@
 require('dotenv').config();
 const express = require('express');
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const { MongoClient } = require('mongodb');
 const { ObjectId } = require('mongodb');
-const API_URL = process.env.API_URL
+
 const { createAccount, loginFunction } = require('./functions');
 const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
 const app = express();
@@ -25,8 +25,6 @@ const corsOptions = {
   optionsSuccessStatus: 200, // For legacy browser support
   credentials: true, // Allowing credentials is important for sessions/cookies
 };
-
-
 app.use(cors(corsOptions));
 
 
