@@ -28,7 +28,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-server.listen(443, () => {
+server.listen(3001, () => {
   console.log('Server is running')
 })
 
