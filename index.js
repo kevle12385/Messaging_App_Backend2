@@ -3,7 +3,7 @@ const express = require('express');
 const PORT = process.env.PORT || 5000;
 const { MongoClient } = require('mongodb');
 const { ObjectId } = require('mongodb');
-
+const API_URL = process.env.API_URL
 const { createAccount, loginFunction } = require('./functions');
 const jwt = require('jsonwebtoken'); // Ensure you've imported jwt
 const app = express();
@@ -21,13 +21,14 @@ const io = new Server(server); // Pass the http.Server instance to Socket
 
 const uri = process.env.MONGODB_URI;
 const corsOptions = {
-  origin: true, // Allow only your frontend origin, adjust as needed
-  optionsSuccessStatus: 200, // For legacy browser support
-  credentials: true, // Allowing credentials is important for sessions/cookies
+  origin: [API_URL], // Replace with your domain
+  optionsSuccessStatus: 200,
+  credentials: true,
 };
+
 app.use(cors(corsOptions));
 
-server.listen(5000, () => {
+server.listen(443, () => {
   console.log('Server is running')
 })
 
